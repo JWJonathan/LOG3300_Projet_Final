@@ -122,6 +122,10 @@ class CustomLogoutView(LogoutView):
             ip = self.request.META.get('REMOTE_ADDR')
         return ip
     
+    def get_redirect_url(self):
+        """Redirige les utilisateurs vers la page d'accueil après la déconnexion"""
+        return reverse_lazy('recipes:recipe_list')
+    
 
 class ProfilView(LoginRequiredMixin, DetailView):
     """

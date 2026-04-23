@@ -1,4 +1,4 @@
-# 📖 Livre de Recettes Familiales
+# 📖 Bibliothèque de Recettes Familiales
 
 Application web complète développée avec le framework Django dans le cadre du projet de fin de session.  
 Elle permet aux utilisateurs de partager, consulter et gérer leurs recettes de cuisine préférées dans un environnement sécurisé et élégant.
@@ -9,10 +9,9 @@ Elle permet aux utilisateurs de partager, consulter et gérer leurs recettes de 
 
 | Ressource | Lien |
 |-----------|------|
-| Application déployée | [https://votre-username.pythonanywhere.com](https://votre-username.pythonanywhere.com) |
-| Dépôt GitHub | [https://github.com/votre-username/livre-recettes-familiales](https://github.com/votre-username/livre-recettes-familiales) |
-| Vidéo de démonstration | [https://youtube.com/watch?v=xxxxx](https://youtube.com/watch?v=xxxxx) |
-| Démonstration alternative | [https://drive.google.com/file/d/xxxxx/view](https://drive.google.com/file/d/xxxxx/view) |
+| Application déployée | [https://jwj.pythonanywhere.com/](https://jwj.pythonanywhere.com/) |
+| Dépôt GitHub | [https://github.com/JWJonathan/LOG3300_Projet_Final](https://github.com/JWJonathan/LOG3300_Projet_Final) |
+| Vidéo de démonstration | [https://drive.google.com/file/d/xxxxx/view](https://drive.google.com/file/d/xxxxx/view) |
 
 ---
 
