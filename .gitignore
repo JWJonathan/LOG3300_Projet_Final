@@ -1,0 +1,22 @@
+# fichier git ignore pour le projet LOG3300_Projet_Final
+# Ignorer les fichiers de base de données SQLite
+db.sqlite3
+# Ignorer les fichiers de migration (optionnel, à générer à nouveau si besoin)
+# **/migrations/
+# Ignorer les fichiers de cache et les fichiers temporaires
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Ignorer les fichiers de log
+*.log
+# Ignorer les fichiers de configuration locale (optionnel, à créer à nouveau si besoin)
+# local_settings.py
+# Ignorer les fichiers de médias (images, vidéos, etc.)
+#media/
+# Ignorer les fichiers de static (optionnel, à générer à nouveau si besoin)
+# static/
+# Ignorer les fichiers de l'environnement virtuel (optionnel, à créer à nouveau si besoin)
+venv/
+
+

@@ -1,0 +1,109 @@
+<!-- utilisateurs/templates/utilisateurs/profil.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body text-center">
+                <img src="{{ utilisateur.profil.avatar.url }}" 
+                     alt="Avatar" 
+                     class="rounded-circle img-fluid mb-3" 
+                     style="width: 150px; height: 150px; object-fit: cover;">
+                
+                <h3>{{ utilisateur.profil.get_full_name }}</h3>
+                <p class="text-muted">@{{ utilisateur.username }}</p>
+                
+                <span class="badge bg-primary mb-2">{{ utilisateur.profil.get_role_display }}</span>
+                
+                {% if utilisateur.profil.bio %}
+                    <p class="mt-3">{{ utilisateur.profil.bio }}</p>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="text-start">
+                    {% if utilisateur.email %}
+                        <p><i class="bi bi-envelope"></i> {{ utilisateur.email }}</p>
+                    {% endif %}
+                    {% if utilisateur.profil.telephone %}
+                        <p><i class="bi bi-telephone"></i> {{ utilisateur.profil.telephone }}</p>
+                    {% endif %}
+                    {% if utilisateur.profil.site_web %}
+                        <p><i class="bi bi-globe"></i> <a href="{{ utilisateur.profil.site_web }}" target="_blank">{{ utilisateur.profil.site_web }}</a></p>
+                    {% endif %}
+                    <p><i class="bi bi-calendar"></i> Membre depuis le {{ utilisateur.date_joined|date:"d/m/Y" }}</p>
+                </div>
+                
+                {% if user == utilisateur %}
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'users:profil-update' %}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Modifier mon profil
+                        </a>
+                        <a href="{% url 'users:password-change' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-key"></i> Changer le mot de passe
+                        </a>
+                    </div>
+                {% elif user.profil.can_manage_users %}
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'users:utilisateur-detail' utilisateur.pk %}" class="btn btn-warning">
+                            <i class="bi bi-shield"></i> Administration
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Livres de l'utilisateur -->
+        {% if utilisateur.livres.all %}
+            <div class="card shadow mb-4 p-6">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Livres ajoutés ({{ total_items }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for livre in utilisateur.livres.all|slice:":6" %}
+                            <div class="col-md-6 mb-2">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>{{ livre.titre }}</h6>
+                                        <p class="small text-muted">{{ livre.auteur }}</p>
+                                        <a href="{% url 'recipes:recipe_list' livre.slug %}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <!-- Activité récente -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Activité récente</h5>
+            </div>
+            <div class="card-body">
+                {% if audit_logs %}
+                    <div class="list-group">
+                        {% for log in audit_logs %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ log.get_action_display }}</h6>
+                                    <small>{{ log.timestamp|timesince }}</small>
+                                </div>
+                                <p class="mb-1">{{ log.description }}</p>
+                                <small>IP: {{ log.ip_address }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Aucune activité récente à afficher.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

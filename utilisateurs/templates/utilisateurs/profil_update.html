@@ -1,0 +1,478 @@
+<!-- utilisateurs/templates/utilisateurs/profil_update.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'recipes:recipe_list' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'users:profil' %}">Mon profil</a></li>
+                    <li class="breadcrumb-item active">Modifier</li>
+                </ol>
+            </nav>
+            
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-pencil-square"></i> Modifier mon profil
+                    </h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Avatar actuel -->
+                        <div class="text-center mb-4">
+                            {% if user.profil.avatar %}
+                                <img src="{{ user.profil.avatar.url }}" 
+                                     alt="Avatar" 
+                                     class="avatar-md mb-2"
+                                     style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
+                                     style="width: 120px; height: 120px;">
+                                    <i class="bi bi-person-circle" style="font-size: 4rem; color: #ccc;"></i>
+                                </div>
+                            {% endif %}
+                            <p class="text-muted small">Photo de profil actuelle</p>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Colonne gauche - Informations utilisateur -->
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-person"></i> Informations du compte
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Nom d'utilisateur (lecture seule) -->
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-at"></i> Nom d'utilisateur
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control bg-light" 
+                                                   value="{{ user.username }}" 
+                                                   readonly
+                                                   disabled>
+                                            <small class="form-text text-muted">
+                                                Le nom d'utilisateur ne peut pas être modifié
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Prénom -->
+                                        <div class="mb-3">
+                                            <label for="{{ user_form.first_name.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-person-badge"></i> Prénom
+                                            </label>
+                                            {{ user_form.first_name }}
+                                            {% if user_form.first_name.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ user_form.first_name.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Nom -->
+                                        <div class="mb-3">
+                                            <label for="{{ user_form.last_name.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-person-badge"></i> Nom
+                                            </label>
+                                            {{ user_form.last_name }}
+                                            {% if user_form.last_name.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ user_form.last_name.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Email -->
+                                        <div class="mb-3">
+                                            <label for="{{ user_form.email.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-envelope"></i> Email
+                                            </label>
+                                            {{ user_form.email }}
+                                            {% if user_form.email.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ user_form.email.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Colonne droite - Informations du profil -->
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-info-circle"></i> Informations complémentaires
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Avatar -->
+                                        <div class="mb-3">
+                                            <label for="{{ profil_form.avatar.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-camera"></i> Photo de profil
+                                            </label>
+                                            {{ profil_form.avatar }}
+                                            {% if profil_form.avatar.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ profil_form.avatar.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                Formats acceptés : JPG, PNG. Taille max : 2 Mo
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Biographie -->
+                                        <div class="mb-3">
+                                            <label for="{{ profil_form.bio.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-journal-text"></i> Biographie
+                                            </label>
+                                            {{ profil_form.bio }}
+                                            {% if profil_form.bio.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ profil_form.bio.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                Parlez-nous un peu de vous (max 500 caractères)
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Téléphone -->
+                                        <div class="mb-3">
+                                            <label for="{{ profil_form.telephone.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-telephone"></i> Téléphone
+                                            </label>
+                                            {{ profil_form.telephone }}
+                                            {% if profil_form.telephone.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ profil_form.telephone.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Adresse -->
+                                        <div class="mb-3">
+                                            <label for="{{ profil_form.adresse.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-geo-alt"></i> Adresse
+                                            </label>
+                                            {{ profil_form.adresse }}
+                                            {% if profil_form.adresse.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ profil_form.adresse.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Date de naissance -->
+                                        <div class="mb-3">
+                                            <label for="{{ profil_form.date_naissance.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-calendar"></i> Date de naissance
+                                            </label>
+                                            {{ profil_form.date_naissance }}
+                                            {% if profil_form.date_naissance.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ profil_form.date_naissance.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Site web -->
+                                        <div class="mb-3">
+                                            <label for="{{ profil_form.site_web.id_for_label }}" class="form-label fw-bold">
+                                                <i class="bi bi-globe"></i> Site web
+                                            </label>
+                                            {{ profil_form.site_web }}
+                                            {% if profil_form.site_web.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                    {{ profil_form.site_web.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                Exemple : https://monsite.com
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informations du compte -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-shield-info"></i> Informations sur votre compte
+                            </h6>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1">
+                                        <i class="bi bi-person-badge"></i> 
+                                        <strong>Rôle :</strong> {{ user.profil.get_role_display }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="bi bi-calendar-check"></i> 
+                                        <strong>Membre depuis :</strong> {{ user.date_joined|date:"d/m/Y" }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1">
+                                        <i class="bi bi-clock-history"></i> 
+                                        <strong>Dernière connexion :</strong> 
+                                        {{ user.last_login|date:"d/m/Y H:i"|default:"Première connexion" }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="bi bi-book"></i> 
+                                        <strong>Livres ajoutés :</strong> {{ user.livres.count }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{% url 'users:profil' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Retour au profil
+                                </a>
+                                <a href="{% url 'users:password-change' %}" class="btn btn-outline-warning ms-2">
+                                    <i class="bi bi-key"></i> Changer le mot de passe
+                                </a>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Vos informations sont protégées et ne seront jamais partagées
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small class="text-muted">
+                                <i class="bi bi-pencil"></i>
+                                Dernière modification : {{ user.profil.date_modification|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prévisualisation de l'avatar
+    const avatarInput = document.getElementById('{{ profil_form.avatar.id_for_label }}');
+    const avatarPreview = document.querySelector('.avatar-md');
+    
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Vérifier la taille du fichier (max 2 Mo)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Le fichier est trop volumineux. Taille maximale : 2 Mo');
+                    this.value = '';
+                    return;
+                }
+                
+                // Vérifier le type de fichier
+                if (!file.type.match('image.*')) {
+                    alert('Veuillez sélectionner une image valide (JPG, PNG, GIF)');
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (avatarPreview.tagName === 'IMG') {
+                        avatarPreview.src = e.target.result;
+                    } else {
+                        // Remplacer l'icône par une image
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Avatar preview';
+                        img.className = 'avatar-md mb-2';
+                        img.style.width = '120px';
+                        img.style.height = '120px';
+                        img.style.objectFit = 'cover';
+                        avatarPreview.parentNode.replaceChild(img, avatarPreview);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Compteur de caractères pour la biographie
+    const bioInput = document.getElementById('{{ profil_form.bio.id_for_label }}');
+    if (bioInput) {
+        const counterDiv = document.createElement('small');
+        counterDiv.className = 'form-text text-muted';
+        counterDiv.id = 'bio-counter';
+        bioInput.parentNode.appendChild(counterDiv);
+        
+        function updateCounter() {
+            const length = bioInput.value.length;
+            const max = 500;
+            counterDiv.innerHTML = `${length} / ${max} caractères`;
+            
+            if (length > max * 0.9) {
+                counterDiv.classList.add('text-warning');
+            } else {
+                counterDiv.classList.remove('text-warning');
+            }
+            
+            if (length > max) {
+                counterDiv.classList.add('text-danger');
+            } else {
+                counterDiv.classList.remove('text-danger');
+            }
+        }
+        
+        bioInput.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+    
+    // Confirmation avant de quitter avec des modifications non enregistrées
+    let formModified = false;
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            formModified = true;
+        });
+        input.addEventListener('input', () => {
+            formModified = true;
+        });
+    });
+    
+    // Réinitialiser le flag quand le formulaire est soumis
+    form.addEventListener('submit', () => {
+        formModified = false;
+    });
+    
+    // Avertissement avant de quitter
+    window.addEventListener('beforeunload', (e) => {
+        if (formModified) {
+            e.preventDefault();
+            e.returnValue = 'Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter ?';
+        }
+    });
+    
+    // Bouton reset
+    const resetButton = form.querySelector('button[type="reset"]');
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            formModified = false;
+        });
+    }
+});
+</script>
+
+<style>
+.avatar-md {
+    border-radius: 50%;
+    border: 3px solid #0d6efd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+#bio-counter {
+    display: block;
+    margin-top: 5px;
+}
+
+#bio-counter.text-warning {
+    color: #ffc107 !important;
+}
+
+#bio-counter.text-danger {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+/* Animation */
+.card {
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-group {
+        display: flex;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+    }
+}
+</style>
+{% endblock %}

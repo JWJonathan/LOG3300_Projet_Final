@@ -1,0 +1,140 @@
+<!-- utilisateurs/templates/utilisateurs/utilisateur_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Gestion des utilisateurs</h4>
+        <div>
+            <span class="badge bg-light text-dark me-2">Total: {{ total_users }}</span>
+            <span class="badge bg-success me-2">Actifs: {{ active_users }}</span>
+            <span class="badge bg-info">Nouveaux: {{ new_users_today }}</span>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <!-- Filtres -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Rechercher par nom, email..." value="{{ search }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i> Rechercher
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="role" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tous les rôles</option>
+                    {% for role_value, role_label in roles %}
+                        <option value="{{ role_value }}" {% if role_filter == role_value %}selected{% endif %}>
+                            {{ role_label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+        
+        <!-- Liste des utilisateurs -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Avatar</th>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Statut</th>
+                        <th>Date d'inscription</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for utilisateur in utilisateurs %}
+                        <tr>
+                            <td>
+                                <img src="{{ utilisateur.profil.avatar.url }}" 
+                                     alt="Avatar" 
+                                     class="rounded-circle" 
+                                     style="width: 40px; height: 40px; object-fit: cover;">
+                            </td>
+                            <td>
+                                <strong>{{ utilisateur.profil.get_full_name }}</strong><br>
+                                <small class="text-muted">@{{ utilisateur.username }}</small>
+                            </td>
+                            <td>{{ utilisateur.email|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ utilisateur.profil.get_role_display }}</span>
+                            </td>
+                            <td>
+                                {% if utilisateur.is_active %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ utilisateur.date_joined|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'profil-detail' utilisateur.pk %}" 
+                                       class="btn btn-outline-primary" 
+                                       title="Voir le profil">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'utilisateur-detail' utilisateur.pk %}" 
+                                       class="btn btn-outline-warning" 
+                                       title="Gérer">
+                                        <i class="bi bi-gear"></i>
+                                    </a>
+                                    {% if user.profil.can_manage_users %}
+                                        <button onclick="toggleUserStatus({{ utilisateur.pk }})" 
+                                                class="btn btn-outline-secondary" 
+                                                title="Activer/Désactiver">
+                                            <i class="bi bi-power"></i>
+                                        </button>
+                                        <a href="{% url 'utilisateur-delete' utilisateur.pk %}" 
+                                           class="btn btn-outline-danger" 
+                                           title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="text-muted">Aucun utilisateur trouvé.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {# include 'includes/pagination.html' with page_obj=page_obj #}
+    </div>
+</div>
+
+<script>
+function toggleUserStatus(userId) {
+    fetch(`/utilisateurs/${userId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}

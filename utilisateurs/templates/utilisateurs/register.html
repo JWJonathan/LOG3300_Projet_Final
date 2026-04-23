@@ -1,0 +1,296 @@
+<!-- utilisateurs/templates/utilisateurs/register.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inscription - Bibliothèque{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-lg mt-4">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h3 class="mb-0">
+                    <i class="bi bi-person-plus-fill"></i> Créer un compte
+                </h3>
+            </div>
+            
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Nom d'utilisateur -->
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-person"></i> Nom d'utilisateur *
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if form.username.help_text %}
+                            <small class="form-text text-muted">{{ form.username.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Prénom et Nom sur la même ligne -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person-badge"></i> Prénom *
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.first_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="bi bi-person-badge"></i> Nom *
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.last_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope"></i> Email *
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Mot de passe -->
+                    <div class="mb-3">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock"></i> Mot de passe *
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password1.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if form.password1.help_text %}
+                            <div class="form-text small">
+                                {{ form.password1.help_text|safe }}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Indicateur de force du mot de passe -->
+                        <div class="password-strength-meter mt-2">
+                            <div class="progress" style="height: 5px;">
+                                <div id="passwordStrength" 
+                                     class="progress-bar" 
+                                     role="progressbar" 
+                                     style="width: 0%;">
+                                </div>
+                            </div>
+                            <small id="passwordStrengthText" class="form-text"></small>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirmation du mot de passe -->
+                    <div class="mb-4">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock-fill"></i> Confirmation du mot de passe *
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.password2.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Conditions d'utilisation -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                        <label class="form-check-label" for="termsCheck">
+                            J'accepte les <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">conditions d'utilisation</a> *
+                        </label>
+                    </div>
+                    
+                    <!-- Boutons -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> S'inscrire
+                        </button>
+                        <a href="{% url 'users:login' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-box-arrow-in-right"></i> Déjà un compte ? Se connecter
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-center py-3 bg-light">
+                <small class="text-muted">
+                    En vous inscrivant, vous acceptez notre politique de confidentialité.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Conditions d'utilisation -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Conditions d'utilisation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Acceptation des conditions</h6>
+                <p>En créant un compte, vous acceptez de respecter les règles de la communauté.</p>
+                
+                <h6>2. Protection des données</h6>
+                <p>Vos données personnelles sont protégées conformément au RGPD.</p>
+                
+                <h6>3. Responsabilité</h6>
+                <p>Vous êtes responsable du contenu que vous publiez sur la plateforme.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">J'ai compris</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Vérification en temps réel de la force du mot de passe
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('{{ form.password1.id_for_label }}');
+    const strengthBar = document.getElementById('passwordStrength');
+    const strengthText = document.getElementById('passwordStrengthText');
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            let feedback = [];
+            
+            if (password.length >= 8) strength += 20;
+            else feedback.push('8+ caractères');
+            
+            if (password.match(/[A-Z]/)) strength += 20;
+            else feedback.push('majuscule');
+            
+            if (password.match(/[a-z]/)) strength += 20;
+            else feedback.push('minuscule');
+            
+            if (password.match(/[0-9]/)) strength += 20;
+            else feedback.push('chiffre');
+            
+            if (password.match(/[!@#$%^&*(),.?":{}|<>]/)) strength += 20;
+            else feedback.push('caractère spécial');
+            
+            // Mise à jour de la barre de progression
+            strengthBar.style.width = strength + '%';
+            
+            // Couleur selon la force
+            if (strength < 40) {
+                strengthBar.className = 'progress-bar bg-danger';
+                strengthText.textContent = 'Faible';
+                strengthText.className = 'text-danger';
+            } else if (strength < 80) {
+                strengthBar.className = 'progress-bar bg-warning';
+                strengthText.textContent = 'Moyen';
+                strengthText.className = 'text-warning';
+            } else {
+                strengthBar.className = 'progress-bar bg-success';
+                strengthText.textContent = 'Fort';
+                strengthText.className = 'text-success';
+            }
+            
+            // Suggestions
+            if (feedback.length > 0) {
+                strengthText.textContent += ' - Manque: ' + feedback.join(', ');
+            }
+        });
+    }
+    
+    // Validation de la correspondance des mots de passe
+    const password2Input = document.getElementById('{{ form.password2.id_for_label }}');
+    if (passwordInput && password2Input) {
+        password2Input.addEventListener('input', function() {
+            if (this.value !== passwordInput.value) {
+                this.classList.add('is-invalid');
+                if (!this.nextElementSibling || !this.nextElementSibling.classList.contains('invalid-feedback')) {
+                    const feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback d-block';
+                    feedback.textContent = 'Les mots de passe ne correspondent pas';
+                    this.parentNode.appendChild(feedback);
+                }
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                const existingFeedback = this.parentNode.querySelector('.invalid-feedback');
+                if (existingFeedback) {
+                    existingFeedback.remove();
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.password-strength-meter {
+    transition: all 0.3s ease;
+}
+
+.progress-bar {
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+</style>
+{% endblock %}

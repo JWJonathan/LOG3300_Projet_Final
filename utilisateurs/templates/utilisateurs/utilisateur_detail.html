@@ -1,0 +1,320 @@
+<!-- utilisateurs/templates/utilisateurs/utilisateur_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails de {{ utilisateur.username }} - Administration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête avec breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'recipes:recipe_list' %}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'users:utilisateur-list' %}">Utilisateurs</a></li>
+            <li class="breadcrumb-item active">{{ utilisateur.username }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Colonne gauche : Informations utilisateur -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i> Informations personnelles
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ utilisateur.profil.avatar.url }}" 
+                         alt="Avatar" 
+                         class="rounded-circle img-fluid mb-3" 
+                         style="width: 120px; height: 120px; object-fit: cover;">
+                    
+                    <h4>{{ utilisateur.profil.get_full_name }}</h4>
+                    <p class="text-muted">@{{ utilisateur.username }}</p>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-info fs-6">{{ utilisateur.profil.get_role_display }}</span>
+                        {% if utilisateur.is_superuser %}
+                            <span class="badge bg-danger fs-6">Superutilisateur</span>
+                        {% endif %}
+                        <span class="badge {% if utilisateur.is_active %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                            {{ utilisateur.is_active|yesno:"Actif,Inactif" }}
+                        </span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-start">
+                        <p><i class="bi bi-envelope"></i> <strong>Email :</strong><br>
+                           {{ utilisateur.email|default:"Non renseigné" }}
+                           {% if not utilisateur.profil.email_verifie %}
+                               <span class="badge bg-warning">Non vérifié</span>
+                           {% endif %}
+                        </p>
+                        
+                        <p><i class="bi bi-telephone"></i> <strong>Téléphone :</strong><br>
+                           {{ utilisateur.profil.telephone|default:"Non renseigné" }}
+                        </p>
+                        
+                        <p><i class="bi bi-geo-alt"></i> <strong>Adresse :</strong><br>
+                           {{ utilisateur.profil.adresse|default:"Non renseignée" }}
+                        </p>
+                        
+                        <p><i class="bi bi-calendar"></i> <strong>Date de naissance :</strong><br>
+                           {{ utilisateur.profil.date_naissance|date:"d/m/Y"|default:"Non renseignée" }}
+                        </p>
+                        
+                        <p><i class="bi bi-globe"></i> <strong>Site web :</strong><br>
+                           {% if utilisateur.profil.site_web %}
+                               <a href="{{ utilisateur.profil.site_web }}" target="_blank">
+                                   {{ utilisateur.profil.site_web }}
+                               </a>
+                           {% else %}
+                               Non renseigné
+                           {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'users:profil-detail' utilisateur.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-eye"></i> Voir le profil public
+                        </a>
+                        {% if user != utilisateur %}
+                            <button onclick="toggleUserStatus({{ utilisateur.pk }})" 
+                                    class="btn btn-outline-warning btn-sm">
+                                <i class="bi bi-power"></i> 
+                                {{ utilisateur.is_active|yesno:"Désactiver,Activer" }} le compte
+                            </button>
+                            <a href="{% url 'users:utilisateur-delete' utilisateur.pk %}" 
+                               class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i> Supprimer l'utilisateur
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistiques -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistiques</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Date d'inscription
+                            <span class="badge bg-primary rounded-pill">
+                                {{ utilisateur.date_joined|date:"d/m/Y" }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Dernière connexion
+                            <span class="badge bg-info rounded-pill">
+                                {{ utilisateur.last_login|date:"d/m/Y H:i"|default:"Jamais" }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Nombre total d'éléments
+                            <span class="badge bg-warning rounded-pill">{{ total_items }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Actions enregistrées
+                            <span class="badge bg-secondary rounded-pill">{{ audit_logs.count }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Colonne droite : Activités et logs -->
+        <div class="col-lg-8">
+            <!-- Actions récentes -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Actions récentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_actions %}
+                        <div class="timeline">
+                            {% for action in recent_actions %}
+                                <div class="timeline-item">
+                                    <div class="timeline-marker 
+                                                {% if action.action == 'login' %}bg-success
+                                                {% elif action.action == 'logout' %}bg-secondary
+                                                {% elif action.action == 'create' %}bg-primary
+                                                {% elif action.action == 'update' %}bg-warning
+                                                {% elif action.action == 'delete' %}bg-danger
+                                                {% else %}bg-info{% endif %}">
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">{{ action.get_action_display }}</h6>
+                                        <p class="mb-1 text-muted">{{ action.description }}</p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> {{ action.timestamp|date:"d/m/Y H:i" }}
+                                            <i class="bi bi-laptop ms-2"></i> IP: {{ action.ip_address }}
+                                        </small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-info-circle"></i> Aucune action récente
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Journal d'audit complet -->
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-bookmark-fill"></i> Journal d'audit complet
+                        </h5>
+                        <span class="badge bg-light text-dark">{{ audit_logs|length }} entrées</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>Description</th>
+                                    <th>IP</th>
+                                    <th>User Agent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in audit_logs %}
+                                    <tr>
+                                        <td class="text-nowrap">
+                                            <small>{{ log.timestamp|date:"d/m/Y H:i:s" }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if log.action == 'login' %}bg-success
+                                                {% elif log.action == 'logout' %}bg-secondary
+                                                {% elif log.action == 'create' %}bg-primary
+                                                {% elif log.action == 'update' %}bg-warning
+                                                {% elif log.action == 'delete' %}bg-danger
+                                                {% elif log.action == 'password_change' %}bg-info
+                                                {% else %}bg-light text-dark{% endif %}">
+                                                {{ log.get_action_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ log.description|truncatechars:50 }}</td>
+                                        <td><code>{{ log.ip_address|default:"-" }}</code></td>
+                                        <td>
+                                            <small class="text-muted" title="{{ log.user_agent }}">
+                                                {{ log.user_agent|truncatechars:30 }}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            <i class="bi bi-journal-x"></i> Aucun log d'audit disponible
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if audit_logs|length > 20 %}
+                    <div class="card-footer text-center">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadMoreLogs()">
+                            <i class="bi bi-chevron-down"></i> Charger plus
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    border-left: 2px solid #dee2e6;
+    padding-left: 20px;
+    margin-left: 10px;
+}
+
+.timeline-item:last-child {
+    border-left: 2px solid transparent;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -8px;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #0d6efd;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    padding-bottom: 5px;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+.badge {
+    font-weight: 500;
+}
+</style>
+
+<script>
+function toggleUserStatus(userId) {
+    if (!confirm('Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?')) {
+        return;
+    }
+    
+    fetch(`/utilisateurs/${userId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erreur: ' + (data.error || 'Action non autorisée'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+function loadMoreLogs() {
+    // Fonction à implémenter pour le chargement asynchrone des logs
+    alert('Fonctionnalité à implémenter avec AJAX');
+}
+</script>
+{% endblock %}

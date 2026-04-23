@@ -1,0 +1,326 @@
+<!-- /categorie_form.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}Modifier{% else %}Nouvelle{% endif %} catégorie
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'recipes:recipe_list' %}">Accueil</a></li>
+                    <li class="breadcrumb-item active">
+                        {% if form.instance.pk %}
+                            Modifier la catégorie
+                        {% else %}
+                            Nouvelle catégorie
+                        {% endif %}
+                    </li>
+                </ol>
+            </nav>
+            
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-{% if form.instance.pk %}pencil{% else %}plus-circle{% endif %}"></i>
+                        {% if form.instance.pk %}
+                            Modifier la catégorie "{{ form.instance.nom }}"
+                        {% else %}
+                            Créer une nouvelle catégorie
+                        {% endif %}
+                    </h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Messages d'erreur généraux -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Nom de la catégorie -->
+                        <div class="mb-4">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-tag"></i> Nom de la catégorie
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-bookmark"></i>
+                                </span>
+                                {{ form.name }}
+                            </div>
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    {{ form.name.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            {% if form.name.help_text %}
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-info-circle"></i> {{ form.name.help_text }}
+                                </small>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Exemples : "Roman", "Science-Fiction", "Histoire", "Biographie"...
+                            </small>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-file-text"></i> Description
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    {{ form.description.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            {% if form.description.help_text %}
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-info-circle"></i> {{ form.description.help_text }}
+                                </small>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Une brève description de cette catégorie (optionnelle)
+                            </small>
+                        </div>
+                        
+                        <!-- Aperçu du slug -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-link-45deg"></i> Slug (généré automatiquement)
+                            </label>
+                            <div class="alert alert-light border">
+                                <code id="slugPreview" class="text-primary">
+                                    {% if form.instance.slug %}
+                                        {{ form.instance.slug }}
+                                    {% else %}
+                                        Sera généré automatiquement à partir du nom
+                                    {% endif %}
+                                </code>
+                            </div>
+                            <small class="form-text text-muted">
+                                Le slug est utilisé dans l'URL de la catégorie. Il sera généré automatiquement.
+                            </small>
+                        </div>
+                        
+                        <!-- Informations supplémentaires -->
+                        <div class="alert alert-info" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-info-circle-fill"></i> Information
+                            </h6>
+                            <hr>
+                            <p class="mb-0">
+                                <i class="bi bi-check2-circle text-success"></i>
+                                Les catégories permettent d'organiser les recettes par thème.
+                            </p>
+                            {% if not form.instance.pk %}
+                                <p class="mb-0 mt-2">
+                                    <i class="bi bi-person-check"></i>
+                                    En tant qu'administrateur, vous seul pouvez créer et gérer les catégories.
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'recipes:recipe_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Retour
+                            </a>
+                            
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-{% if form.instance.pk %}check-circle{% else %}plus-circle{% endif %}"></i>
+                                    {% if form.instance.pk %}
+                                        Mettre à jour
+                                    {% else %}
+                                        Créer la catégorie
+                                    {% endif %}
+                                </button>
+                                
+                                {% if not form.instance.pk %}
+                                    <button type="reset" class="btn btn-outline-warning">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                        Réinitialiser
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Footer avec informations -->
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-lock"></i>
+                                Création réservée aux administrateurs
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i>
+                                {% if form.instance.date_creation %}
+                                    Créée le {{ form.instance.date_creation|date:"d/m/Y" }}
+                                {% else %}
+                                    Nouvelle catégorie
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Liste des catégories existantes -->
+            {% if not form.instance.pk %}
+                <div class="card shadow mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Catégories existantes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if categories_existantes %}
+                            <div class="row">
+                                {% for cat in categories_existantes %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-bookmark-fill text-primary me-2"></i>
+                                            <div>
+                                                <strong>{{ cat.nom }}</strong>
+                                                {% if cat.description %}
+                                                    <br>
+                                                    <small class="text-muted">{{ cat.description|truncatechars:50 }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-info-circle"></i>
+                                Aucune catégorie n'a encore été créée.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour l'aperçu du slug -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nomInput = document.getElementById('{{ form.nom.id_for_label }}');
+    const slugPreview = document.getElementById('slugPreview');
+    
+    if (nomInput && slugPreview && !{{ form.instance.pk|yesno:"true,false" }}) {
+        function slugify(text) {
+            return text
+                .toString()
+                .toLowerCase()
+                .normalize('NFD')                // Décompose les caractères accentués
+                .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+                .replace(/\s+/g, '-')            // Remplace les espaces par des tirets
+                .replace(/[^\w\-]+/g, '')        // Supprime les caractères non-word
+                .replace(/\-\-+/g, '-')          // Remplace les tirets multiples par un seul
+                .replace(/^-+/, '')              // Supprime les tirets au début
+                .replace(/-+$/, '');             // Supprime les tirets à la fin
+        }
+        
+        nomInput.addEventListener('input', function() {
+            const slug = slugify(this.value);
+            if (slug) {
+                slugPreview.textContent = slug;
+                slugPreview.classList.add('text-success');
+            } else {
+                slugPreview.textContent = 'Sera généré automatiquement à partir du nom';
+                slugPreview.classList.remove('text-success');
+            }
+        });
+        
+        // Déclencheur initial
+        if (nomInput.value) {
+            const event = new Event('input');
+            nomInput.dispatchEvent(event);
+        }
+    }
+});
+</script>
+
+<style>
+/* Styles pour les champs du formulaire */
+#{{ form.nom.id_for_label }} {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+#{{ form.nom.id_for_label }}:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-radius: 8px;
+}
+
+.input-group:focus-within .input-group-text,
+.input-group:focus-within .form-control {
+    border-color: #86b7fe;
+}
+
+#{{ form.description.id_for_label }} {
+    min-height: 120px;
+    resize: vertical;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.alert-light {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+}
+
+/* Animation de transition */
+.card {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}

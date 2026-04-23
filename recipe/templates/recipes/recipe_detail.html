@@ -1,0 +1,88 @@
+<!-- templates/recipes/recipe_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ recipe.title }} - Livre de Recettes{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- En-tête avec image -->
+        <div class="card shadow-sm mb-4">
+            {% if recipe.image %}
+                <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.title }}"
+                     style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h1 class="card-title">{{ recipe.title }}</h1>
+                <div class="d-flex flex-wrap gap-2 text-muted mb-3">
+                    <span><i class="bi bi-person-circle"></i> Par <strong>{{ recipe.author.username }}</strong></span>
+                    <span class="ms-2"><i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d/m/Y" }}</span>
+                    {% if recipe.category %}
+                        <span class="ms-2"><i class="bi bi-folder"></i> {{ recipe.category.name }}</span>
+                    {% endif %}
+                    <span class="ms-2"><i class="bi bi-bar-chart"></i> Difficulté: {{ recipe.get_difficulty_display }}</span>
+                </div>
+                <p class="lead">{{ recipe.description }}</p>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <i class="bi bi-stopwatch"></i><br>
+                        <strong>{{ recipe.prep_time }} min</strong><br>
+                        <small>Préparation</small>
+                    </div>
+                    <div class="col-4">
+                        <i class="bi bi-fire"></i><br>
+                        <strong>{{ recipe.cook_time }} min</strong><br>
+                        <small>Cuisson</small>
+                    </div>
+                    <div class="col-4">
+                        <i class="bi bi-people"></i><br>
+                        <strong>{{ recipe.servings }} pers.</strong><br>
+                        <small>Portions</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex justify-content-between">
+                <a href="{% url 'recipes:recipe_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+                {% if user == recipe.author %}
+                    <div>
+                        <a href="{% url 'recipes:recipe_update' recipe.slug %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <a href="{% url 'recipes:recipe_delete' recipe.slug %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ingrédients et Étapes -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="h5 mb-0"><i class="bi bi-basket"></i> Ingrédients</h3>
+                    </div>
+                    <div class="card-body">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ recipe.ingredients }}</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h3 class="h5 mb-0"><i class="bi bi-list-check"></i> Préparation</h3>
+                    </div>
+                    <div class="card-body">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ recipe.steps }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

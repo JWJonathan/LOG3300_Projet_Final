@@ -1,0 +1,203 @@
+<!-- utilisateurs/templates/utilisateurs/utilisateur_confirm_delete.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Supprimer {{ utilisateur.username }} - Confirmation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    Confirmation de suppression
+                </h4>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="display-1 text-danger mb-3">
+                        <i class="bi bi-person-x-fill"></i>
+                    </div>
+                    <h3 class="text-danger">Attention !</h3>
+                    <p class="lead">
+                        Vous êtes sur le point de supprimer définitivement l'utilisateur :
+                    </p>
+                    <div class="alert alert-warning">
+                        <h4 class="alert-heading">
+                            <i class="bi bi-person-circle"></i> {{ utilisateur.profil.get_full_name }}
+                        </h4>
+                        <p class="mb-1">
+                            <strong>Nom d'utilisateur :</strong> @{{ utilisateur.username }}<br>
+                            <strong>Email :</strong> {{ utilisateur.email|default:"Non renseigné" }}<br>
+                            <strong>Rôle :</strong> {{ utilisateur.profil.get_role_display }}<br>
+                            <strong>Membre depuis :</strong> {{ utilisateur.date_joined|date:"d/m/Y" }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <h5><i class="bi bi-shield-exclamation"></i> Conséquences de cette action :</h5>
+                    <ul class="mb-0">
+                        <li>Le compte utilisateur sera définitivement supprimé</li>
+                        <li>Toutes les données associées seront effacées</li>
+                        <li>Les contenus créés par cet utilisateur seront supprimés</li>
+                        <li>Cette action est <strong>irréversible</strong></li>
+                    </ul>
+                </div>
+                
+                <!-- Statistiques des données à supprimer -->
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6>Données qui seront supprimées :</h6>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="border rounded p-2">
+                                    <h3 class="text-danger">{{ total_items }}</h3>
+                                    <small>Livres</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2">
+                                    <h3 class="text-danger">{{ audit_logs.count }}</h3>
+                                    <small>Logs d'audit</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2">
+                                    <h3 class="text-danger">1</h3>
+                                    <small>Profil</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Confirmation supplémentaire -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmCheck" required>
+                            <label class="form-check-label" for="confirmCheck">
+                                Je comprends que cette action est irréversible et j'accepte les conséquences
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Mot de passe administrateur pour confirmer -->
+                    <div class="mb-4">
+                        <label for="adminPassword" class="form-label">
+                            <i class="bi bi-shield-lock"></i> Mot de passe administrateur requis
+                        </label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="adminPassword" 
+                               name="admin_password" 
+                               placeholder="Entrez votre mot de passe"
+                               required>
+                        <small class="form-text text-muted">
+                            Pour des raisons de sécurité, veuillez confirmer votre mot de passe administrateur
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg" id="deleteButton" disabled>
+                            <i class="bi bi-trash-fill"></i> Confirmer la suppression définitive
+                        </button>
+                        <a href="{% url 'users:utilisateur-detail' utilisateur.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler et retourner au profil
+                        </a>
+                        <a href="{% url 'users:utilisateur-list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left"></i> Retour à la liste des utilisateurs
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer bg-light text-muted">
+                <small>
+                    <i class="bi bi-info-circle"></i> 
+                    Cette action sera enregistrée dans le journal d'audit et notifiée aux administrateurs
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheck = document.getElementById('confirmCheck');
+    const deleteButton = document.getElementById('deleteButton');
+    const adminPassword = document.getElementById('adminPassword');
+    
+    // Activer le bouton uniquement si la case est cochée ET le mot de passe saisi
+    function updateDeleteButton() {
+        deleteButton.disabled = !(confirmCheck.checked && adminPassword.value.length > 0);
+    }
+    
+    confirmCheck.addEventListener('change', updateDeleteButton);
+    adminPassword.addEventListener('input', updateDeleteButton);
+    
+    // Animation de confirmation
+    deleteButton.addEventListener('mouseenter', function() {
+        if (!this.disabled) {
+            this.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> DERNIÈRE CHANCE !';
+        }
+    });
+    
+    deleteButton.addEventListener('mouseleave', function() {
+        if (!this.disabled) {
+            this.innerHTML = '<i class="bi bi-trash-fill"></i> Confirmer la suppression définitive';
+        }
+    });
+    
+    // Confirmation supplémentaire au clic
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!confirm('ÊTES-VOUS ABSOLUMENT SÛR ?\n\nCette action supprimera DÉFINITIVEMENT cet utilisateur et TOUTES ses données.\n\nCliquez sur OK pour continuer ou Annuler pour revenir en arrière.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+.card.border-danger {
+    border-width: 3px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+#deleteButton:not(:disabled) {
+    animation: shake 0.5s;
+    animation-iteration-count: 1;
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+</style>
+{% endblock %}

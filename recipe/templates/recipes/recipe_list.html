@@ -1,0 +1,137 @@
+<!-- templates/recipes/recipe_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Toutes les recettes - Livre de Recettes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0"><i class="bi bi-grid-3x3-gap-fill"></i> Toutes les recettes</h1>
+    {% if user.is_authenticated %}
+        <a href="{% url 'recipes:recipe_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nouvelle recette
+        </a>
+    {% endif %}
+</div>
+
+<!-- Barre de recherche et filtres -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <form method="get" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Rechercher une recette..."
+                   value="{{ search_query|default:'' }}">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i>
+            </button>
+            {% if search_query %}
+                <a href="{% url 'recipes:recipe_list' %}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-x-lg"></i> Effacer
+                </a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                {% if selected_category %}
+                    Catégorie : {{ categories|first|default:'' }}
+                {% else %}
+                    Filtrer par catégorie
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu w-100">
+                <li><a class="dropdown-item" href="{% url 'recipes:recipe_list' %}">Toutes</a></li>
+                {% for cat in categories %}
+                    <li><a class="dropdown-item" href="?category={{ cat.slug }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                        {{ cat.name }}
+                    </a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Grille de recettes -->
+{% if recipes %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for recipe in recipes %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    {% if recipe.image %}
+                        <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.title }}"
+                             style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                             style="height: 200px;">
+                            <i class="bi bi-egg-fried" style="font-size: 4rem; color: #ccc;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ recipe.title }}</h5>
+                        <p class="card-text text-muted">
+                            <i class="bi bi-person"></i> {{ recipe.author.username }}<br>
+                            <i class="bi bi-tag"></i> {{ recipe.category.name|default:"Non classé" }}<br>
+                            <i class="bi bi-clock"></i> Préparation: {{ recipe.prep_time }} min
+                            {% if recipe.cook_time %} | Cuisson: {{ recipe.cook_time }} min{% endif %}
+                        </p>
+                        <p class="card-text">{{ recipe.description|truncatewords:20 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="{% url 'recipes:recipe_detail' recipe.slug %}" class="btn btn-outline-primary w-100">
+                            Voir la recette <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Pagination" class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                            &laquo; Précédent
+                        </a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                            Suivant &raquo;
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+{% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-emoji-frown" style="font-size: 3rem;"></i>
+        <h4 class="mt-3">Aucune recette trouvée</h4>
+        {% if search_query or selected_category %}
+            <p>Essayez avec d'autres critères de recherche.</p>
+            <a href="{% url 'recipes:recipe_list' %}" class="btn btn-outline-primary">Voir toutes les recettes</a>
+        {% else %}
+            <p>Il n'y a pas encore de recette. Soyez le premier à en ajouter une !</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'recipes:recipe_create' %}" class="btn btn-primary">Créer une recette</a>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="btn btn-primary">Connectez-vous pour commencer</a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
